@@ -1,0 +1,14 @@
+Detailed history file for the SplitExpression package.
+
+v1.0 - 14.08.21: 
+	**First release
+	
+v1.0.1 - 14.08.28: 
+	**Removed redundant $Info from package
+	**Modified AllowDerivsOfUpMetric to work with protected metrics.
+
+v1.0.2 - 
+	**Bugfix in SplitExpression function to instruct TmpDelta to equal zero when its two indices are different parameters
+	**Removed messages when undefining tensors.
+	**Defined the SplitComponents function to output the components of an expression in a user-friendly format
+	**Defined the AddTensorDependencies to make it simpler to add new dependencies to a list of tensors
