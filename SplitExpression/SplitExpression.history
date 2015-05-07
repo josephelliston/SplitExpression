@@ -3,7 +3,12 @@ Detailed history file for the SplitExpression package.
 v1.0.0 - 2015.02.05: 
 	**First added files to GitHub
 	
-v1.0.1 - XXXXXXXXXX: 
+v1.0.1 - 2015.05.07: 
 	**Updates to detailed package description to improve readability
 	**Updates to function usage messages to improve readability
+	**DecompositionQ function first argument changed to be a manifold rather than an integer representing the dimension of that manifold. This makes the DefSplitting function code slightly more transparent.
+	**Index ordering in MinimizeMetricDummies function (rule2) changed to make it more transparent.
+	**BUGFIX - BIndexQ rule in SplitExpression changed to AIndexQ
+	**BUGFIX - Method to obtain ‘Cleanednewexpr’ in the SplitExpression function has been adjusted to only remove parameters that appear as index arguments to defined tensors. Previously, an index anywhere was removed!
+	**InverseComposition function added (previously part of the ByParts package
 
