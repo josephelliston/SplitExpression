@@ -21,7 +21,7 @@
 
 (* ::Text:: *)
 (*:History:*)
-(*Current version: v1.0.1 (2015.05.07)*)
+(*Current version: v1.0.2 (2015.05.15)*)
 (*See SplitExpression.history for incremental updates*)
 (**)
 
@@ -50,7 +50,7 @@
 (*Package version number:*)
 
 
-xAct`SplitExpression`$Version={"1.0.1",Date[][[{1,2,3}]]};
+xAct`SplitExpression`$Version={"1.0.2",{2015,5,15}};
 
 
 (* ::Text:: *)
@@ -154,36 +154,37 @@ Protect[IndexForm];
 (*Detailed package description*)
 
 
-(* ::Input:: *)
-(*$SplitExpressionDescription="*)
-(*This package allows the user to perform arbitrary index splitting operations on tensorial expressions. One use of this package is to expand tensorial expressions into component form, but the package also allows for the range of values that an index takes to be split into an arbitrary combination of smaller ranges. *)
-(**)
-(*When the indices on a tensor are split then the tensor components are effectively split into block form. This package automatically defines each of the block components as a new tensor, and for clarity we refer to these new tensors as split-tensors. *)
-(**)
-(*Dummy/contracted indices are split into separate summations over the new index ranges. Free indices behave differently, and splitting these yields multiple output terms corresponding to each possible choice for splitting each free indice. *)
-(**)
-(*It is commonplace to separate single values from an index range so that they no longer appear in any index summations. For example, it is commonplace to perform the '3+1' split in Relatively to split 4-dimensional spacetime indices into 3-dimensional spatial indices and 1-dimensional time. When performing such an index splitting, this package mimmics the way that the calculation would be done by hand and the split-tensors associated to single index values are defined to have a lower rank and as such they are not furnished with pointless indices that can only take one possible value. Note that the resulting split-tensors on the will in general have *parametric* dependence on all of the previous variables and this is accounted for automatically. This parametric dependence is a non-trivial coding exercise, and a key motivation for the creation of this package.*)
-(**)
-(*The tensorial indices that will be decomposed are assumed to live on a given tangent bundle. In xAct, these indices can be abstract (A) indices, basis (B) indices or individual component (C) indices. C-indices cannot be split since they are already written in terms of individual components. B-indices can arise whenever a basis has been defined, and A-indices are understood to be defined with respect to some fiducial basis. B- and C-indices are principally used in the xCoba package. In this SplitExpression package, we purposefully avoid using such basis or component indices and work only with A-indices. This choice is partially pragmatic, allowing us to use the greater functionality of xTensor in manipulating A-indices to yield considerably simpler code, but it only prevents us from looking at the scenario with both A- and B-indices simultaneously present in the same VBundle which a confusing concept in any case and one we are keen to avoid.*)
-(**)
-(*The indices before and after the splitting must be defined first. Indices belong to a VBundle. If we also require a metric to raise and lower any of these indices, then xTensor demands that the VBundle is tangent to a manifold, and is known as a TangentVBundle. To avoid the complication of dealing with some VBundles being TangentVBundles and others not, we stipulate that all \[IGrave]ndices are defined on TangentVBundles. Since a TangentVBundle is created automatically when a manifold is defined, instead of working with VBundles we can work with manifolds; one must define a manifold for the original space (along with its indices) and manifolds for all of the subspaces (along with their indices). Parameters, as discussed, will not have indices and so no manifold for these needs to be defined. Returning to the '3+1' example, the discussion above means that at the start of the code one needs to define a spacetime manifold and a spacial manifold, with indices on each manifold, but no time manifold is required.*)
-(**)
-(*For orientation putposes, let us now discuss the likely way in which the SplitExpression package will be used and summarise what the main functions do:*)
-(**)
-(*1) One will begin by defining a manifold and some tensors to obtain the tensorial expression that one wants to split.*)
-(*2) Next one will need to define manifolds, indices and parameters that will appear in the expression after it is split.*)
-(*3) The splitting is defined using the function DefSplitting to define a splitting object. This function doesn't acutally do any splitting itself, but it stores the details of the splitting and associates these details to a name, e.g. 'MySplitting'. This allows the user to use as many different splitting as they like in the same code.*)
-(*4) The tensorial expression can then be split using the function 'SplitExpression'. This first expands out any curvature tensors into the metric, preventing us from needing to follow the Gauss-Codazzi route which is intentional since we want to be more general than a 3+1 split. If any metrics are defined then these are used to put all tensor indices into their default positions (those positions as given at definition time). This is useful because the splitting of a tensor is dependent on the up/down character of the indices, and so by having all indices in default locations minimizes the number of split-tensors needed. Any dummy indices are then expanded out to be either parameters or indices of the defined sub-spaces. If the input expression contains free indices then these are expanded into an array, with the dimension of the resulting array equal to the number of free indices. For example, in the '3+1' split the spacetime indices '\[Mu],\[Nu],...' become either a time parameter 't' or spatial indices 'i,j,...', where the spatial indices are defined on a manifold 'M3'. Using SplitExpression to perform an ADM split on a scalar quantity such as F[\[Mu],-\[Mu]] then yields F[t,-t]+F[i,-i]. This result contains invalid tensors because the parameter indices are inhomogeneous and not of standard form. This is resolved via an internal call to the function 'ToDefaultNomenclature' which we now discuss:*)
-(*5) 'ToDefaultNomenclature' acts on tensors with invalid parameter indices and, if not already defined, creates new split-tensors that are valid for the given indices. Following the previous example with a splitting called 'MySplitting', 'ToDefaultNomenclature' leads to the transformation F[t,-t]->F\[FormalCapitalS]MySplitting\[FormalCapitalU]t\[FormalCapitalD]t[] and F[i,-i]->F\[FormalCapitalS]MySplitting\[FormalCapitalM]M3\[FormalCapitalM]M3[i,-i], where the new tensors F\[FormalCapitalS]MySplitting\[FormalCapitalU]t\[FormalCapitalD]t and F\[FormalCapitalS]MySplitting\[FormalCapitalM]M3\[FormalCapitalM]M3 are in the 'default nomenclature' of the SplitExpression package. The default nomenclature is intended only as a placeholder; it may look ugly, but the tensor names clearly state how they are defined. If we have defined a splitting called 'MySplitting' and a tensor called 'MyTensor' that has 'N' indices being split, then the default nomenclature for the split-tensors of MyTensor is a concetenation of names as <MyTensor>\[FormalCapitalS]<MySplitting><IndexForm1><IndexForm2>...<IndexFormN>, where <IndexForm> takes one of three forms:*)
-(**)
-(*a) If the index is a contravariant (up) parameter called MyParameter then IndexForm = \[FormalCapitalU]MyParameter.*)
-(*b) If the index is a covariant (down) parameter called MyParameter then IndexForm = \[FormalCapitalD]MyParameter.*)
-(*c) If the index is an index (up or down) on some manifold MyManifold then IndexForm = \[FormalCapitalM]MyManifold.*)
-(**)
-(*We incorporate the name of the splitting in the tensor name to ensure that all split-tensors are unique to each given splitting.*)
-(*6) One is able to stick with the default nomenclature. However, this may not be ideal for two reasons: Firstly, the resulting expressions look ugly and are longwinded. Secondly, it is likely that one would want to write out the split-tensors in terms of other tensors (such as in the '3+1' split in Relativity where the time-time component of the metric is rewritten as a function of the Lapse scalar and the Shift vector). To allow this to be done easily, the function SplittingRules may be used. This sets up a list of rules that are appended to the global variable $SplittingRules[MySplitting]. These rules can then be applied to an expression by using the function 'UseSplittingRules'. UseSplittingRules is automatically called by SplitExpression, so if one defines the splitting rules in advance of splitting the tensorial expression, then the default nomencature is never output.*)
-(**)
-(*SplitExpression works with covariant derivatives and curvature tensors in a particularly naive way, by expanding them all out in terms of partial derivatives of the metric and then splitting the indices. This has the benefit of being very simple, robust and widely applicable. The expressions therefore contain very many partial derivatives PD. The user may then want to rewrite these in terms of covariant derivatives defined using metrics of the spaces following the splitting, but since there does not appear to be a general way to perform this operation we have kept the PD derivatives in the output.*)
+$SplitExpressionDescription = "
+   This package allows the user to perform arbitrary index splitting operations on tensorial expressions. One use of this package is to expand tensorial expressions into component form, but the package also allows for the range of values that an index takes to be split into an arbitrary combination of smaller ranges. 
+    
+   When the indices on a tensor are split then the tensor components are effectively split into block form. This package automatically defines each of the block components as a new tensor, and for clarity we refer to these new tensors as \[OpenCurlyQuote]split tensors\[CloseCurlyQuote]. 
+    
+   Dummy/contracted indices are split into separate summations over the new index ranges. Free indices behave differently, and splitting these yields multiple output terms corresponding to each possible choice for splitting each free indice. 
+    
+   It is commonplace to separate single values from an index range so that they no longer appear in any index summations. For example, when performing the '3+1' split in General Relatively where one splits 4-dimensional spacetime indices into 3-dimensional spatial indices and 1-dimensional time. When performing such an index splitting, this package mimmics the way that the calculation would be done by hand and the split-tensors associated to single index values are defined to have a lower rank and as such they are not furnished with pointless indices that can only take one possible value. Note that the resulting split-tensors will in general have *parametric* dependence on all of the previous variables and this is accounted for automatically. This parametric dependence is a non-trivial coding exercise, and a key motivation for the creation of this package.
+    
+   The tensorial indices that will be decomposed are assumed to live on a given tangent bundle. In xAct, these indices can be abstract (A) indices, basis (B) indices or individual component (C) indices. C-indices cannot be split since they are already written in terms of individual components. B-indices can arise whenever a basis has been defined, and A-indices are understood to be defined with respect to some fiducial basis. B- and C-indices are principally used in the xCoba package. In this SplitExpression package, we purposefully avoid using such basis or component indices and work only with A-indices. This choice is partially pragmatic, allowing us to use the greater functionality of xTensor in manipulating A-indices to yield considerably simpler code. The only restriction imposed by choosing to only work with A-indices is the scenario with both A- and B-indices simultaneously present in the same VBundle, and this is a potentially confusing scenario in any case.
+    
+   The indices before and after the splitting must be defined first. Indices belong to a VBundle. If we also require a metric to raise and lower any of these indices, then xTensor demands that the VBundle is tangent to a manifold, and is known as a TangentVBundle. To avoid the complication of dealing with some VBundles being TangentVBundles and others not, we stipulate that all \[IGrave]ndices are defined on TangentVBundles. Since a TangentVBundle is created automatically when a manifold is defined, instead of working with VBundles we can work with manifolds; one must define a manifold for the original space (along with its indices) and manifolds for all of the subspaces (along with their indices). Parameters, as discussed, will not have indices and so no manifolds need be defined for these. Returning to the '3+1' example, the discussion above means that at the start of the code one needs to define a spacetime manifold and a spacial manifold, with indices on each manifold, but no time manifold is required.
+    
+   For orientation putposes, let us now discuss the likely way in which the SplitExpression package will be used and summarise what the main functions do:
+    
+   1) One will begin by defining a manifold and some tensors to obtain the tensorial expression that one wants to split.
+   2) Next one will need to define manifolds, indices and parameters that will appear in the expression after it is split.
+   3) The splitting is defined using the function DefSplitting to define a splitting object. This function doesn't acutally do any splitting itself, but it stores the details of the splitting and associates these details to a name, e.g. 'MySplitting'. This allows the user to use as many different splitting as they like in the same code.
+   4) The tensorial expression can then be split using the function 'SplitExpression'. This first expands out any curvature tensors into derivatives of the metric, preventing us from needing to follow the Gauss-Codazzi route which is intentional since we want to be more general than a 3+1 split. If any metrics are defined then these are used to put all tensor indices into their default positions (those positions as given at definition time). This is useful because the splitting of a tensor is dependent on the up/down character of the indices, and so by having all indices in default locations minimizes the number of split-tensors needed. Any dummy indices are then expanded out to be either parameters or indices of the defined sub-index ranges. If the input expression contains free indices then these are expanded into an array, with the dimension of the resulting array equal to the number of free indices. For example, let us define \[OpenCurlyQuote]MySplitting\[CloseCurlyQuote] as the '3+1' split the spacetime indices '\[Mu],\[Nu],...' become either a time parameter 't' or spatial indices 'i,j,...', where the spatial indices are defined on a manifold 'M3'. Using SplitExpression to perform MySplitting on a scalar quantity such as F[\[Mu],-\[Mu]] then yields F[t,-t]+F[i,-i]. This result contains invalid tensors because the parameter indices are inhomogeneous and not of standard form. This is resolved via an internal call to the function 'ToDefaultNomenclature' which we now discuss:
+   5) 'ToDefaultNomenclature' acts on tensors with invalid parameter indices and, if not already defined, creates new split-tensors that are valid for the given indices. Following the previous example with a splitting called 'MySplitting', 'ToDefaultNomenclature' leads to the transformation F[t,-t]->F\[FormalCapitalS]MySplitting\[FormalCapitalU]t\[FormalCapitalD]t[] and F[i,-i]->F\[FormalCapitalS]MySplitting\[FormalCapitalM]M3\[FormalCapitalM]M3[i,-i], where the new tensors F\[FormalCapitalS]MySplitting\[FormalCapitalU]t\[FormalCapitalD]t and F\[FormalCapitalS]MySplitting\[FormalCapitalM]M3\[FormalCapitalM]M3 are in the 'default nomenclature' of the SplitExpression package. The default nomenclature is intended only as a placeholder; it may look ugly, but the tensor names clearly state how they are defined. If we have defined a splitting called 'MySplitting' and a tensor called 'MyTensor' that has 'N' indices being split, then the default nomenclature for the split-tensors of MyTensor is a concetenation of names as <MyTensor>\[FormalCapitalS]<MySplitting><IndexForm1><IndexForm2>...<IndexFormN>, where <IndexForm> takes one of three forms:
+    
+   a) If the index is a contravariant (up) parameter called MyParameter then IndexForm = \[FormalCapitalU]MyParameter.
+   b) If the index is a covariant (down) parameter called MyParameter then IndexForm = \[FormalCapitalD]MyParameter.
+   c) If the index is an index (up or down) on some manifold MyManifold then IndexForm = \[FormalCapitalM]MyManifold.
+    
+   We incorporate the name of the splitting in the tensor name to ensure that all split-tensors are unique to each given splitting.
+   6) One is able to stick with the default nomenclature. However, this may not be ideal for two reasons: Firstly, the resulting expressions look ugly and are longwinded. Secondly, it is likely that one would want to write out the split-tensors in terms of other tensors (such as in the '3+1' split in Relativity where the time-time component of the metric is rewritten as a function of the Lapse scalar and the Shift vector). To allow this to be done easily, the function SplittingRules may be used. This sets up a list of rules that are appended to the global variable $SplittingRules[MySplitting]. These rules can then be applied to an expression by using the function 'UseSplittingRules'. UseSplittingRules is automatically called by SplitExpression, so if one defines the splitting rules in advance of splitting the tensorial expression, then the default nomencature is never output.
+    
+   SplitExpression works with covariant derivatives and curvature tensors in a particularly naive way, by expanding them all out in terms of partial derivatives of the metric and then splitting the indices. This has the benefit of being very simple, robust and widely applicable. The expressions therefore contain very many partial derivatives PD. The user may then want to rewrite these in terms of covariant derivatives defined using metrics of the spaces following the splitting, but since there does not appear to be a general way to perform this operation we have kept the PD derivatives in the output.
+   
+   For finding individual components of a tensorial expression, the auxilliary function SplitComponents may be helpful. This uses the SplitExpression function to make the split into individual components, and then arranges them in a column with labels to make the output more user-friendly. "
 
 
 (* ::Subsection::Closed:: *)
@@ -193,7 +194,7 @@ Protect[IndexForm];
 (* ::Text:: *)
 (*My thanks go to David Seery and the University of Sussex for allowing me to devote so much time into writing this package. *)
 (*I am also indebted to Guido Pettinari for patiently sharing some of his vast knowledge of Mathematica.*)
-(*--Joe Elliston*)
+(*--Joseph Elliston*)
 
 
 (* ::Section::Closed:: *)
@@ -298,7 +299,7 @@ Begin["`Private`"];
 (*InfoLevel=2 --- All output messages are permitted.*)
 
 
-InfoLevel=0;
+InfoLevel = 0;
 
 
 (* ::Text:: *)
@@ -394,7 +395,7 @@ DefSplitting[splitting_Symbol, OldManifold_?ManifoldQ -> Decomp_List] :=
   Module[{},	
       	Print[ToString@splitting <> " is already defined. Removing and redefining this splitting..."];
       	UndefSplitting[splitting];
-      	DefSplitting[splitting, OldManifold -> Decomp]
+      	DefSplitting[splitting, OldManifold -> Decomp];
       ] /; (DecompositionQ[OldManifold, Decomp])/; (SplittingQ@splitting)
 
 (*First argument is an existing symbol that is not a splitting*)
@@ -444,6 +445,8 @@ SetNumberOfArguments[UndefSplitting, 1];
 UndefSplitting[splitting_?SplittingQ] :=
 	Module[{ii},
 		(*Remove splitting from the global list $Splittings*)
+		InfoPrint["Initially $Splittings = ",2];
+		InfoPrint[$Splittings,2];		
 		Unprotect[$Splittings];
 		$Splittings = DeleteCases[$Splittings, splitting];
 		Protect[$Splittings];
@@ -461,7 +464,9 @@ UndefSplitting[splitting_?SplittingQ] :=
 		];
 
 		(*Remove splitting*)
-		Remove[splitting];
+		ClearAll[splitting];
+		InfoPrint["Finally $Splittings = ",2];
+		InfoPrint[$Splittings,2];		
 	];
 
 
@@ -1033,7 +1038,7 @@ Module[{},
 	(*Check that there are rules to use*)
 	If[!ValueQ@Global`$SplittingRules[splitting],
 		expr,
-		NoScalar[(expr/.Power[A_,B_]:>Power[Scalar[A],B])/.Global`$SplittingRules[splitting]]
+		NoScalar[ToCanonical[(expr/.Power[A_,B_]:>Power[Scalar[A],B])/.Global`$SplittingRules[splitting],UseMetricOnVBundle->None]]//ScreenDollarIndices
 	]
 ];
 

@@ -1,8 +1,8 @@
 Detailed history file for the SplitExpression package.
 
-v1.0.0 - 2015.02.05: 
-	**First added files to GitHub
-	
+v1.0.2 - 2015.05.15: 
+	**Example file reviewed, trimmed and checked. Minor bugfixes and tidying up of the package file. Ready now to send to first external users!
+
 v1.0.1 - 2015.05.07: 
 	**Updates to detailed package description to improve readability
 	**Updates to function usage messages to improve readability
@@ -11,4 +11,7 @@ v1.0.1 - 2015.05.07:
 	**BUGFIX - BIndexQ rule in SplitExpression changed to AIndexQ
 	**BUGFIX - Method to obtain ‘Cleanednewexpr’ in the SplitExpression function has been adjusted to only remove parameters that appear as index arguments to defined tensors. Previously, an index anywhere was removed!
 	**InverseComposition function added (previously part of the ByParts package
+
+v1.0.0 - 2015.02.05: 
+	**First added files to GitHub
 
