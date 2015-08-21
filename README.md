@@ -24,8 +24,8 @@ Copyright (C) 2014-2015, Joseph Elliston, under the General Public Licence
 
 1) If not already done, check that you can run the default xAct package example files.
 
-2) Download the SplitExpression repository contents (one directory and one linker file) 
-and place them at the top level within the xAct directory, wherever it is on your computer. 
+2) Download the SplitExpression repository file 
+and place it at the top level within the xAct directory, wherever it is on your computer. 
 
 3) Open the examples file and run it. If it runs, the installation worked.
 
