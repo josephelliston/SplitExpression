@@ -1,5 +1,11 @@
 Detailed history file for the SplitExpression package.
 
+v1.1.0 - 2016.05.21: 
+	**Major modifications made to improve speed and simplicity. Instead of expanding out all curvature tensors every time, these values can be calculated by the ComputeCurvatureTensors function and their results stores in the SplittingRules. This is much more computationally efficient. Additionally, the output of the SplitExpression and UseSplittingRules functions is now set to canonicalise as an option, and this can result in a massive speed improvement. These changes then meant that various existing functions were redundant and have been removed. Some other functions have also been simplified. There are also a range of minor changes throughout.
+
+v1.0.3 - 2015.10.04: 
+	**post-calculation function added
+
 v1.0.2 - 2015.05.15: 
 	**Example file reviewed, trimmed and checked. Minor bugfixes and tidying up of the package file. Ready now to send to first external users!
 
